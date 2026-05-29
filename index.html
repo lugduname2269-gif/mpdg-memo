@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ひらめきメモ</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ひらめきメモ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #18181c; --surface2: #222228; --border: #2e2e36;
+    --accent: #7c6af7; --accent-soft: rgba(124,106,247,0.15); --accent-glow: rgba(124,106,247,0.35);
+    --text: #f0effe; --text-muted: #7d7b8e; --text-dim: #4a4858;
+    --danger: #f06b6b; --success: #5de3a5; --warning: #f0c46b;
+    --mono: 'DM Mono', monospace; --sans: 'Noto Sans JP', sans-serif; --radius: 14px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 0 5rem; }
+  .header { width: 100%; max-width: 520px; padding: 2.5rem 1.5rem 0.5rem; display: flex; align-items: center; gap: 10px; }
+  .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+  .tag { font-family: var(--mono); font-size: 11px; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em; }
+  .tabs { width: 100%; max-width: 520px; padding: 0.75rem 1.5rem 0; display: flex; gap: 4px; }
+  .tab { flex: 1; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .tab:hover:not(.active) { background: var(--surface2); color: var(--text); }
+  .main { width: 100%; max-width: 520px; padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .page { display: none; flex-direction: column; gap: 1.25rem; }
+  .page.active { display: flex; }
+  .status-bar { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); min-height: 20px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+  .status-dot.recording { background: var(--danger); animation: blink 1s ease-in-out infinite; }
+  .status-dot.ready { background: var(--success); }
+  .status-dot.loading { background: var(--warning); animation: blink 0.6s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .record-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+  .waveform-wrap { width: 100%; height: 56px; display: flex; align-items: center; justify-content: center; gap: 3px; overflow: hidden; }
+  .bar { width: 4px; height: 6px; background: var(--text-dim); border-radius: 2px; transition: height 0.1s ease, background 0.2s; }
+  .recording .bar { background: var(--accent); animation: wave 0.8s ease-in-out infinite alternate; }
+  @keyframes wave { 0%{height:6px} 100%{height:44px} }
+  .recording .bar:nth-child(odd){animation-delay:0.1s} .recording .bar:nth-child(3n){animation-delay:0.25s} .recording .bar:nth-child(5n){animation-delay:0.4s} .recording .bar:nth-child(7n){animation-delay:0.15s}
+  .timer { font-family: var(--mono); font-size: 2rem; font-weight: 500; letter-spacing: 0.05em; color: var(--text-muted); transition: color 0.2s; }
+  .timer.active { color: var(--text); }
+  .rec-btn { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--accent); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, box-shadow 0.15s, transform 0.1s; }
+  .rec-btn:hover { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); }
+  .rec-btn:active { transform: scale(0.95); }
+  .rec-btn .dot { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); transition: border-radius 0.2s, transform 0.2s, background 0.2s; }
+  .rec-btn.recording { border-color: var(--danger); box-shadow: 0 0 0 8px rgba(240,107,107,0.12); }
+  .rec-btn.recording .dot { border-radius: 5px; transform: scale(0.85); background: var(--danger); }
+  .rec-hint { font-size: 12px; color: var(--text-muted); }
+  .section-label { font-size: 11px; font-family: var(--mono); color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+  .transcript-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); min-height: 100px; padding: 1rem 1.25rem; font-size: 15px; line-height: 1.7; color: var(--text-muted); resize: none; font-family: var(--sans); width: 100%; transition: border-color 0.2s; }
+  .transcript-box:focus { outline: none; border-color: var(--accent); color: var(--text); }
+  .transcript-box.has-text { color: var(--text); }
+  .ai-setting { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 10px; }
+  .ai-setting-row { display: flex; align-items: center; gap: 10px; }
+  .ai-setting-row label { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+  .ai-select { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 0.5rem 0.75rem; cursor: pointer; }
+  .ai-select:focus { outline: none; border-color: var(--accent); }
+  .api-key-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 0.5rem 0.75rem; }
+  .api-key-input:focus { outline: none; border-color: var(--accent); }
+  .api-key-input::placeholder { color: var(--text-dim); }
+  .action-row { display: flex; gap: 10px; }
+  .btn { flex: 1; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn:hover { background: var(--border); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #6857e6; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn:disabled:active { transform: none; }
+  .ai-result-box { background: var(--surface); border: 1px solid var(--accent-glow); border-radius: var(--radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 10px; animation: fadeIn 0.3s ease; }
+  .ai-result-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .ai-label { font-size: 11px; font-family: var(--mono); color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; }
+  .ai-cats { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ai-cat-badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+  .ai-bullets { display: flex; flex-direction: column; gap: 4px; }
+  .ai-bullet { font-size: 14px; line-height: 1.6; color: var(--text); display: flex; gap: 8px; align-items: flex-start; }
+  .ai-bullet::before { content: '・'; color: var(--accent); flex-shrink: 0; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .living-memo { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .living-memo-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .living-memo-title { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+  .living-memo-updated { font-size: 11px; font-family: var(--mono); color: var(--text-dim); }
+  .category-block { border-bottom: 1px solid var(--border); }
+  .category-block:last-child { border-bottom: none; }
+  .category-header { padding: 0.875rem 1.25rem 0.5rem; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .category-arrow { font-size: 10px; color: var(--accent); transition: transform 0.2s; }
+  .category-arrow.open { transform: rotate(90deg); }
+  .category-name { font-size: 13px; font-weight: 500; color: var(--accent); }
+  .category-count { font-size: 11px; font-family: var(--mono); color: var(--text-dim); margin-left: auto; }
+  .category-items { padding: 0 1.25rem 1rem 1.25rem; display: flex; flex-direction: column; gap: 4px; }
+  .category-item { font-size: 14px; line-height: 1.65; color: var(--text); display: flex; gap: 8px; align-items: flex-start; }
+  .category-item::before { content: '・'; color: var(--text-dim); flex-shrink: 0; margin-top: 1px; }
+  .empty-state { text-align: center; padding: 2.5rem; color: var(--text-dim); font-size: 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); line-height: 1.8; }
+  .edit-bar { display: flex; gap: 8px; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--surface2); }
+  .edit-bar span { font-size: 12px; color: var(--text-muted); flex: 1; }
+  .btn-sm { padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: var(--sans); font-size: 12px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-sm:hover { background: var(--surface); color: var(--text); }
+  .btn-sm.danger { color: var(--danger); border-color: rgba(240,107,107,0.3); }
+  .btn-sm.danger:hover { background: rgba(240,107,107,0.1); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ひらめきメモ</h1>
+  <span class="tag">BETA</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('record')">録音</button>
+  <button class="tab" onclick="switchTab('memos')">まとめメモ</button>
+</div>
+
+<div class="main">
+
+  <!-- 録音タブ -->
+  <div class="page active" id="page-record">
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">録音の準備ができています</span>
+    </div>
+    <div class="record-card">
+      <div class="waveform-wrap" id="waveform"></div>
+      <div class="timer" id="timer">0:00</div>
+      <button class="rec-btn" id="recBtn" onclick="toggleRecording()"><div class="dot"></div></button>
+      <span class="rec-hint" id="recHint">タップして録音開始</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem">
+      <div class="section-label">文字起こし</div>
+      <textarea class="transcript-box" id="transcriptBox" rows="4"
+        placeholder="録音が終わると、ここに文字起こしが表示されます。&#10;（直接入力もできます）"></textarea>
+    </div>
+    <div class="ai-setting">
+      <div class="section-label" style="margin-bottom:2px">AI設定</div>
+      <div class="ai-setting-row">
+        <label>サービス</label>
+        <select class="ai-select" id="aiService" onchange="onServiceChange()">
+          <option value="openai">OpenAI (ChatGPT)</option>
+          <option value="claude" selected>Claude (Anthropic)</option>
+        </select>
+      </div>
+      <div class="ai-setting-row">
+        <label>APIキー</label>
+        <input class="api-key-input" type="password" id="apiKeyInput" placeholder="sk-ant-... APIキーを貼り付け" />
+      </div>
+    </div>
+    <div id="aiResult" style="display:none"></div>
+    <div class="action-row">
+      <button class="btn" id="clearBtn" onclick="clearAll()" disabled>クリア</button>
+      <button class="btn primary" id="saveBtn" onclick="runAIAndSave()" disabled>AI解析して統合 ✦</button>
+    </div>
+  </div>
+
+  <!-- まとめメモタブ -->
+  <div class="page" id="page-memos">
+    <div id="livingMemoWrap"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  CONFIG — APIキーはここか画面の入力欄に
+// ============================================================
+const DEFAULT_CLAUDE_KEY = 'ここにAPIキーを貼り付ける';
+const DEFAULT_OPENAI_KEY = '';
+
+// ============================================================
+//  State
+// ============================================================
+let mediaRecorder = null;
+let audioChunks   = [];
+let timerInterval = null;
+let seconds       = 0;
+let livingMemo    = JSON.parse(localStorage.getItem('living_memo') || '{}');
+let lastUpdated   = localStorage.getItem('living_memo_updated') || null;
+
+// ============================================================
+//  Waveform
+// ============================================================
+const waveform = document.getElementById('waveform');
+for (let i = 0; i < 32; i++) {
+  const b = document.createElement('div'); b.className = 'bar'; waveform.appendChild(b);
+}
+
+// ============================================================
+//  Speech Recognition
+// ============================================================
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if (SR) {
+  recognition = new SR();
+  recognition.lang = 'ja-JP';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onresult = (e) => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+    }
+    if (final) {
+      const box = document.getElementById('transcriptBox');
+      box.value += (box.value ? '　' : '') + final;
+      box.classList.add('has-text');
+      updateButtons();
+    }
+  };
+}
+
+// ============================================================
+//  Recording
+// ============================================================
+async function toggleRecording() {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') await startRecording();
+  else stopRecording();
+}
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.start();
+    if (recognition) recognition.start();
+    document.getElementById('recBtn').classList.add('recording');
+    document.getElementById('waveform').classList.add('recording');
+    document.getElementById('recHint').textContent = 'タップして録音停止';
+    setStatus('recording', '録音中...');
+    startTimer();
+  } catch(err) { setStatus('', 'マイクへのアクセスを許可してください'); }
+}
+function stopRecording() {
+  if (mediaRecorder) { mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(t => t.stop()); }
+  if (recognition) recognition.stop();
+  document.getElementById('recBtn').classList.remove('recording');
+  document.getElementById('waveform').classList.remove('recording');
+  document.getElementById('recHint').textContent = 'タップして録音開始';
+  setStatus('ready', '録音完了 — 「AI解析して統合」を押してください');
+  stopTimer();
+  updateButtons();
+}
+function startTimer() {
+  seconds = 0;
+  document.getElementById('timer').classList.add('active');
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = Math.floor(seconds / 60);
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerInterval); document.getElementById('timer').classList.remove('active'); }
+
+// ============================================================
+//  AI + Save（統合）
+//  既存メモ全体をAIに渡して「重複なしで統合したJSONを返せ」と指示
+// ============================================================
+async function runAIAndSave() {
+  const text = document.getElementById('transcriptBox').value.trim();
+  if (!text) return;
+
+  const service  = document.getElementById('aiService').value;
+  const inputKey = document.getElementById('apiKeyInput').value.trim();
+  const apiKey   = inputKey || (service === 'openai' ? DEFAULT_OPENAI_KEY : DEFAULT_CLAUDE_KEY);
+
+  if (!apiKey || apiKey === 'ここにAPIキーを貼り付ける') {
+    showAIError('APIキーを入力してください');
+    return;
+  }
+
+  setStatus('loading', 'AI が統合中...');
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('saveBtn').innerHTML = '<span class="spinner"></span> 統合中...';
+  document.getElementById('aiResult').style.display = 'none';
+
+  // 既存メモをテキストで表現
+  const existingText = buildExistingText();
+
+  const prompt = `あなたはメモ整理AIです。
+既存のまとめメモに新しいメモを統合してください。
+
+【既存のまとめメモ】
+${existingText || '（まだ何もありません）'}
+
+【新しいメモ（音声入力）】
+「${text}」
+
+ルール:
+- 新しい情報を既存メモに追加・更新する
+- 意味が重複する項目は1つにまとめる（例:「牛乳を買う」と「牛乳：スーパー」→「牛乳（スーパー）」）
+- より詳しい情報がある場合は詳しい方を残す
+- 箇条書き項目は簡潔に（20文字以内が理想）
+- 既存カテゴリ名はそのまま使う、新カテゴリは適切に命名する
+
+以下のJSON形式のみで返答してください（他の文字・説明は不要）:
+{
+  "memo": {
+    "カテゴリ名": ["項目1", "項目2"],
+    "別カテゴリ": ["項目A"]
+  }
+}`;
+
+  try {
+    let raw;
+    if (service === 'openai') raw = await callOpenAI(apiKey, prompt);
+    else raw = await callClaude(apiKey, prompt);
+
+    const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    livingMemo  = json.memo;
+    lastUpdated = new Date().toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    localStorage.setItem('living_memo', JSON.stringify(livingMemo));
+    localStorage.setItem('living_memo_updated', lastUpdated);
+
+    // プレビュー表示
+    showMergePreview(livingMemo);
+    setStatus('ready', 'まとめメモに統合しました ✓');
+    clearAll();
+    renderLivingMemo();
+
+  } catch(err) {
+    showAIError('エラー: ' + err.message);
+    setStatus('', '統合に失敗しました');
+  }
+
+  document.getElementById('saveBtn').disabled = false;
+  document.getElementById('saveBtn').innerHTML = 'AI解析して統合 ✦';
+}
+
+function buildExistingText() {
+  const cats = Object.keys(livingMemo);
+  if (cats.length === 0) return '';
+  return cats.map(cat => {
+    const items = livingMemo[cat].map(i => `  ・${i}`).join('\n');
+    return `【${cat}】\n${items}`;
+  }).join('\n\n');
+}
+
+function showMergePreview(memo) {
+  const el = document.getElementById('aiResult');
+  el.style.display = 'block';
+  const cats = Object.keys(memo);
+  const catsHtml = cats.map(c => `<span class="ai-cat-badge">${escHtml(c)}</span>`).join('');
+  const bulletsHtml = cats.flatMap(c => memo[c].map(b => `<div class="ai-bullet">${escHtml(b)}</div>`)).join('');
+  el.innerHTML = `
+    <div class="ai-result-box">
+      <div class="ai-result-header">
+        <span class="ai-label">統合完了</span>
+        <div class="ai-cats">${catsHtml}</div>
+      </div>
+      <div class="ai-bullets">${bulletsHtml}</div>
+    </div>`;
+}
+
+function showAIError(msg) {
+  const el = document.getElementById('aiResult');
+  el.style.display = 'block';
+  el.innerHTML = `<div style="background:rgba(240,107,107,0.1);border:1px solid rgba(240,107,107,0.3);border-radius:10px;padding:1rem;font-size:13px;color:#f06b6b;">${escHtml(msg)}</div>`;
+}
+
+async function callOpenAI(apiKey, prompt) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], max_tokens: 800 })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'OpenAI APIエラー'); }
+  return (await res.json()).choices[0].message.content;
+}
+
+async function callClaude(apiKey, prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, messages: [{ role: 'user', content: prompt }] })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Claude APIエラー'); }
+  return (await res.json()).content[0].text;
+}
+
+// ============================================================
+//  Clear
+// ============================================================
+function clearAll() {
+  document.getElementById('transcriptBox').value = '';
+  document.getElementById('transcriptBox').classList.remove('has-text');
+  document.getElementById('timer').textContent = '0:00';
+  document.getElementById('aiResult').style.display = 'none';
+  updateButtons();
+}
+
+document.getElementById('transcriptBox').addEventListener('input', updateButtons);
+function updateButtons() {
+  const hasText = document.getElementById('transcriptBox').value.trim().length > 0;
+  document.getElementById('clearBtn').disabled = !hasText;
+  document.getElementById('saveBtn').disabled  = !hasText;
+}
+
+// ============================================================
+//  Render living memo
+// ============================================================
+function renderLivingMemo() {
+  const wrap = document.getElementById('livingMemoWrap');
+  const cats = Object.keys(livingMemo);
+  if (cats.length === 0) {
+    wrap.innerHTML = '<div class="empty-state">まだメモがありません。<br>録音タブから最初のメモを作りましょう。</div>';
+    return;
+  }
+  const updatedStr = lastUpdated ? `最終更新: ${lastUpdated}` : '';
+  const blocks = cats.map(cat => {
+    const items = livingMemo[cat];
+    return `
+      <div class="category-block">
+        <div class="category-header" onclick="toggleCategory(this)">
+          <span class="category-arrow open">▶</span>
+          <span class="category-name">${escHtml(cat)}</span>
+          <span class="category-count">${items.length}件</span>
+        </div>
+        <div class="category-items">
+          ${items.map(item => `<div class="category-item">${escHtml(item)}</div>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div class="living-memo">
+      <div class="living-memo-header">
+        <span class="living-memo-title">まとめメモ</span>
+        <span class="living-memo-updated">${updatedStr}</span>
+      </div>
+      ${blocks}
+      <div class="edit-bar">
+        <span>最新の状態に自動整理されます</span>
+        <button class="btn-sm danger" onclick="confirmClearAll()">全削除</button>
+      </div>
+    </div>`;
+}
+
+function toggleCategory(header) {
+  const arrow = header.querySelector('.category-arrow');
+  const items = header.nextElementSibling;
+  const isOpen = arrow.classList.contains('open');
+  arrow.classList.toggle('open', !isOpen);
+  items.style.display = isOpen ? 'none' : 'flex';
+}
+
+function confirmClearAll() {
+  if (confirm('まとめメモをすべて削除しますか？')) {
+    livingMemo = {}; lastUpdated = null;
+    localStorage.removeItem('living_memo');
+    localStorage.removeItem('living_memo_updated');
+    renderLivingMemo();
+  }
+}
+
+// ============================================================
+//  Tab / helpers
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i===0&&tab==='record')||(i===1&&tab==='memos'));
+  });
+  document.getElementById('page-record').classList.toggle('active', tab==='record');
+  document.getElementById('page-memos').classList.toggle('active', tab==='memos');
+  if (tab === 'memos') renderLivingMemo();
+}
+function onServiceChange() {
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiKeyInput').placeholder =
+    document.getElementById('aiService').value === 'openai' ? 'sk-... OpenAI APIキーを貼り付け' : 'sk-ant-... Claude APIキーを貼り付け';
+}
+function setStatus(type, msg) {
+  document.getElementById('statusDot').className = 'status-dot' + (type ? ' '+type : '');
+  document.getElementById('statusText').textContent = msg;
+}
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+renderLivingMemo();
+</script>
+</body>
+</html>
