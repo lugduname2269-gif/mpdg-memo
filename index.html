@@ -54,14 +54,23 @@
   .transcript-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); min-height: 100px; padding: 1rem 1.25rem; font-size: 15px; line-height: 1.7; color: var(--text-muted); resize: none; font-family: var(--sans); width: 100%; transition: border-color 0.2s; }
   .transcript-box:focus { outline: none; border-color: var(--accent); color: var(--text); }
   .transcript-box.has-text { color: var(--text); }
+
+  /* AI Setting */
   .ai-setting { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 10px; }
   .ai-setting-row { display: flex; align-items: center; gap: 10px; }
   .ai-setting-row label { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
   .ai-select { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 0.5rem 0.75rem; cursor: pointer; }
   .ai-select:focus { outline: none; border-color: var(--accent); }
-  .api-key-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 0.5rem 0.75rem; }
+  .key-input-wrap { flex: 1; position: relative; display: flex; align-items: center; }
+  .api-key-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 0.5rem 2.5rem 0.5rem 0.75rem; }
   .api-key-input:focus { outline: none; border-color: var(--accent); }
   .api-key-input::placeholder { color: var(--text-dim); }
+  .key-saved-badge { position: absolute; right: 8px; font-size: 10px; color: var(--success); font-family: var(--mono); white-space: nowrap; }
+  .key-hint { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; justify-content: space-between; }
+  .key-hint button { font-size: 11px; color: var(--danger); background: none; border: none; cursor: pointer; font-family: var(--sans); padding: 0; }
+  .key-hint button:hover { text-decoration: underline; }
+
+  /* Buttons */
   .action-row { display: flex; gap: 10px; }
   .btn { flex: 1; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .btn:hover { background: var(--border); }
@@ -70,6 +79,8 @@
   .btn.primary:hover { background: #6857e6; }
   .btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .btn:disabled:active { transform: none; }
+
+  /* AI result */
   .ai-result-box { background: var(--surface); border: 1px solid var(--accent-glow); border-radius: var(--radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 10px; animation: fadeIn 0.3s ease; }
   .ai-result-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .ai-label { font-size: 11px; font-family: var(--mono); color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -80,27 +91,53 @@
   .ai-bullet::before { content: '・'; color: var(--accent); flex-shrink: 0; }
   .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Living memo */
   .living-memo { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .living-memo-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .living-memo-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .living-memo-title { font-size: 13px; font-weight: 500; color: var(--text-muted); }
   .living-memo-updated { font-size: 11px; font-family: var(--mono); color: var(--text-dim); }
+  .edit-mode-btn { font-size: 12px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: var(--sans); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .edit-mode-btn.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .edit-mode-btn:hover { background: var(--surface2); }
   .category-block { border-bottom: 1px solid var(--border); }
   .category-block:last-child { border-bottom: none; }
-  .category-header { padding: 0.875rem 1.25rem 0.5rem; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-  .category-arrow { font-size: 10px; color: var(--accent); transition: transform 0.2s; }
+  .category-header { padding: 0.875rem 1.25rem 0.5rem; display: flex; align-items: center; gap: 8px; }
+  .category-arrow { font-size: 10px; color: var(--accent); transition: transform 0.2s; cursor: pointer; }
   .category-arrow.open { transform: rotate(90deg); }
-  .category-name { font-size: 13px; font-weight: 500; color: var(--accent); }
-  .category-count { font-size: 11px; font-family: var(--mono); color: var(--text-dim); margin-left: auto; }
-  .category-items { padding: 0 1.25rem 1rem 1.25rem; display: flex; flex-direction: column; gap: 4px; }
-  .category-item { font-size: 14px; line-height: 1.65; color: var(--text); display: flex; gap: 8px; align-items: flex-start; }
-  .category-item::before { content: '・'; color: var(--text-dim); flex-shrink: 0; margin-top: 1px; }
-  .empty-state { text-align: center; padding: 2.5rem; color: var(--text-dim); font-size: 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); line-height: 1.8; }
+  .category-name-static { font-size: 13px; font-weight: 500; color: var(--accent); flex: 1; }
+  .category-name-input { flex: 1; background: var(--surface2); border: 1px solid var(--accent); border-radius: 6px; color: var(--accent); font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 3px 8px; }
+  .category-name-input:focus { outline: none; }
+  .category-count { font-size: 11px; font-family: var(--mono); color: var(--text-dim); }
+  .cat-del-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(240,107,107,0.4); background: transparent; color: var(--danger); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  .cat-del-btn:hover { background: rgba(240,107,107,0.15); }
+  .category-items { padding: 0 1.25rem 1rem 1.25rem; display: flex; flex-direction: column; gap: 6px; }
+  .category-item-row { display: flex; align-items: center; gap: 8px; }
+  .category-item-bullet { color: var(--text-dim); flex-shrink: 0; font-size: 14px; }
+  .category-item-text { font-size: 14px; line-height: 1.65; color: var(--text); flex: 1; }
+  .category-item-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--sans); font-size: 14px; padding: 4px 8px; }
+  .category-item-input:focus { outline: none; border-color: var(--accent); }
+  .item-del-btn { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(240,107,107,0.4); background: transparent; color: var(--danger); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  .item-del-btn:hover { background: rgba(240,107,107,0.15); }
+  .add-item-row { display: flex; gap: 8px; margin-top: 4px; }
+  .add-item-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--sans); font-size: 14px; padding: 4px 8px; }
+  .add-item-input:focus { outline: none; border-color: var(--accent); }
+  .add-item-input::placeholder { color: var(--text-dim); }
+  .add-item-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); font-family: var(--sans); font-size: 13px; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+  .add-item-btn:hover { background: var(--accent); color: #fff; }
+  .add-cat-row { padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .add-cat-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 0.5rem 0.75rem; }
+  .add-cat-input:focus { outline: none; border-color: var(--accent); }
+  .add-cat-input::placeholder { color: var(--text-dim); }
+  .add-cat-btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); font-family: var(--sans); font-size: 13px; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+  .add-cat-btn:hover { background: var(--accent); color: #fff; }
   .edit-bar { display: flex; gap: 8px; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--surface2); }
   .edit-bar span { font-size: 12px; color: var(--text-muted); flex: 1; }
   .btn-sm { padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: var(--sans); font-size: 12px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .btn-sm:hover { background: var(--surface); color: var(--text); }
   .btn-sm.danger { color: var(--danger); border-color: rgba(240,107,107,0.3); }
   .btn-sm.danger:hover { background: rgba(240,107,107,0.1); }
+  .empty-state { text-align: center; padding: 2.5rem; color: var(--text-dim); font-size: 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); line-height: 1.8; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 </style>
 </head>
@@ -135,6 +172,8 @@
       <textarea class="transcript-box" id="transcriptBox" rows="4"
         placeholder="録音が終わると、ここに文字起こしが表示されます。&#10;（直接入力もできます）"></textarea>
     </div>
+
+    <!-- AI Setting -->
     <div class="ai-setting">
       <div class="section-label" style="margin-bottom:2px">AI設定</div>
       <div class="ai-setting-row">
@@ -146,9 +185,19 @@
       </div>
       <div class="ai-setting-row">
         <label>APIキー</label>
-        <input class="api-key-input" type="password" id="apiKeyInput" placeholder="sk-ant-... APIキーを貼り付け" />
+        <div class="key-input-wrap">
+          <input class="api-key-input" type="password" id="apiKeyInput"
+            placeholder="sk-ant-... APIキーを貼り付け"
+            oninput="onKeyInput()" />
+          <span class="key-saved-badge" id="keySavedBadge" style="display:none">保存済み ✓</span>
+        </div>
+      </div>
+      <div class="key-hint">
+        <span id="keyHintText"></span>
+        <button onclick="forgetKey()" id="forgetKeyBtn" style="display:none">キーを削除</button>
       </div>
     </div>
+
     <div id="aiResult" style="display:none"></div>
     <div class="action-row">
       <button class="btn" id="clearBtn" onclick="clearAll()" disabled>クリア</button>
@@ -165,12 +214,6 @@
 
 <script>
 // ============================================================
-//  CONFIG — APIキーはここか画面の入力欄に
-// ============================================================
-const DEFAULT_CLAUDE_KEY = 'ここにAPIキーを貼り付ける';
-const DEFAULT_OPENAI_KEY = '';
-
-// ============================================================
 //  State
 // ============================================================
 let mediaRecorder = null;
@@ -179,6 +222,58 @@ let timerInterval = null;
 let seconds       = 0;
 let livingMemo    = JSON.parse(localStorage.getItem('living_memo') || '{}');
 let lastUpdated   = localStorage.getItem('living_memo_updated') || null;
+let isEditMode    = false;
+
+// ============================================================
+//  API Key persistence
+// ============================================================
+function loadSavedKey() {
+  const service = document.getElementById('aiService').value;
+  const saved = localStorage.getItem('api_key_' + service);
+  const input = document.getElementById('apiKeyInput');
+  const badge = document.getElementById('keySavedBadge');
+  const hint  = document.getElementById('keyHintText');
+  const forgetBtn = document.getElementById('forgetKeyBtn');
+  if (saved) {
+    input.value = saved;
+    badge.style.display = 'inline';
+    hint.textContent = '前回のキーを自動入力しました';
+    forgetBtn.style.display = 'inline';
+  } else {
+    input.value = '';
+    badge.style.display = 'none';
+    hint.textContent = '入力すると次回から自動入力されます';
+    forgetBtn.style.display = 'none';
+  }
+}
+
+function onKeyInput() {
+  const service = document.getElementById('aiService').value;
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (val.length > 10) {
+    localStorage.setItem('api_key_' + service, val);
+    document.getElementById('keySavedBadge').style.display = 'inline';
+    document.getElementById('keyHintText').textContent = 'キーを保存しました';
+    document.getElementById('forgetKeyBtn').style.display = 'inline';
+  }
+}
+
+function forgetKey() {
+  const service = document.getElementById('aiService').value;
+  localStorage.removeItem('api_key_' + service);
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('keySavedBadge').style.display = 'none';
+  document.getElementById('keyHintText').textContent = '入力すると次回から自動入力されます';
+  document.getElementById('forgetKeyBtn').style.display = 'none';
+}
+
+function onServiceChange() {
+  document.getElementById('apiKeyInput').placeholder =
+    document.getElementById('aiService').value === 'openai'
+      ? 'sk-... OpenAI APIキーを貼り付け'
+      : 'sk-ant-... Claude APIキーを貼り付け';
+  loadSavedKey();
+}
 
 // ============================================================
 //  Waveform
@@ -257,30 +352,23 @@ function startTimer() {
 function stopTimer() { clearInterval(timerInterval); document.getElementById('timer').classList.remove('active'); }
 
 // ============================================================
-//  AI + Save（統合）
-//  既存メモ全体をAIに渡して「重複なしで統合したJSONを返せ」と指示
+//  AI + Save
 // ============================================================
 async function runAIAndSave() {
   const text = document.getElementById('transcriptBox').value.trim();
   if (!text) return;
 
   const service  = document.getElementById('aiService').value;
-  const inputKey = document.getElementById('apiKeyInput').value.trim();
-  const apiKey   = inputKey || (service === 'openai' ? DEFAULT_OPENAI_KEY : DEFAULT_CLAUDE_KEY);
+  const apiKey   = document.getElementById('apiKeyInput').value.trim();
 
-  if (!apiKey || apiKey === 'ここにAPIキーを貼り付ける') {
-    showAIError('APIキーを入力してください');
-    return;
-  }
+  if (!apiKey) { showAIError('APIキーを入力してください'); return; }
 
   setStatus('loading', 'AI が統合中...');
   document.getElementById('saveBtn').disabled = true;
   document.getElementById('saveBtn').innerHTML = '<span class="spinner"></span> 統合中...';
   document.getElementById('aiResult').style.display = 'none';
 
-  // 既存メモをテキストで表現
   const existingText = buildExistingText();
-
   const prompt = `あなたはメモ整理AIです。
 既存のまとめメモに新しいメモを統合してください。
 
@@ -316,12 +404,10 @@ ${existingText || '（まだ何もありません）'}
     localStorage.setItem('living_memo', JSON.stringify(livingMemo));
     localStorage.setItem('living_memo_updated', lastUpdated);
 
-    // プレビュー表示
     showMergePreview(livingMemo);
     setStatus('ready', 'まとめメモに統合しました ✓');
     clearAll();
     renderLivingMemo();
-
   } catch(err) {
     showAIError('エラー: ' + err.message);
     setStatus('', '統合に失敗しました');
@@ -332,9 +418,7 @@ ${existingText || '（まだ何もありません）'}
 }
 
 function buildExistingText() {
-  const cats = Object.keys(livingMemo);
-  if (cats.length === 0) return '';
-  return cats.map(cat => {
+  return Object.keys(livingMemo).map(cat => {
     const items = livingMemo[cat].map(i => `  ・${i}`).join('\n');
     return `【${cat}】\n${items}`;
   }).join('\n\n');
@@ -346,14 +430,7 @@ function showMergePreview(memo) {
   const cats = Object.keys(memo);
   const catsHtml = cats.map(c => `<span class="ai-cat-badge">${escHtml(c)}</span>`).join('');
   const bulletsHtml = cats.flatMap(c => memo[c].map(b => `<div class="ai-bullet">${escHtml(b)}</div>`)).join('');
-  el.innerHTML = `
-    <div class="ai-result-box">
-      <div class="ai-result-header">
-        <span class="ai-label">統合完了</span>
-        <div class="ai-cats">${catsHtml}</div>
-      </div>
-      <div class="ai-bullets">${bulletsHtml}</div>
-    </div>`;
+  el.innerHTML = `<div class="ai-result-box"><div class="ai-result-header"><span class="ai-label">統合完了</span><div class="ai-cats">${catsHtml}</div></div><div class="ai-bullets">${bulletsHtml}</div></div>`;
 }
 
 function showAIError(msg) {
@@ -392,7 +469,6 @@ function clearAll() {
   document.getElementById('aiResult').style.display = 'none';
   updateButtons();
 }
-
 document.getElementById('transcriptBox').addEventListener('input', updateButtons);
 function updateButtons() {
   const hasText = document.getElementById('transcriptBox').value.trim().length > 0;
@@ -411,40 +487,144 @@ function renderLivingMemo() {
     return;
   }
   const updatedStr = lastUpdated ? `最終更新: ${lastUpdated}` : '';
-  const blocks = cats.map(cat => {
+
+  const blocks = cats.map((cat, ci) => {
     const items = livingMemo[cat];
-    return `
-      <div class="category-block">
-        <div class="category-header" onclick="toggleCategory(this)">
-          <span class="category-arrow open">▶</span>
-          <span class="category-name">${escHtml(cat)}</span>
-          <span class="category-count">${items.length}件</span>
-        </div>
-        <div class="category-items">
-          ${items.map(item => `<div class="category-item">${escHtml(item)}</div>`).join('')}
-        </div>
+    const itemsHtml = items.map((item, ii) => {
+      if (isEditMode) {
+        return `<div class="category-item-row">
+          <span class="category-item-bullet">・</span>
+          <input class="category-item-input" value="${escAttr(item)}"
+            onchange="updateItem(${ci}, ${ii}, this.value)" />
+          <button class="item-del-btn" onclick="deleteItem(${ci}, ${ii})">×</button>
+        </div>`;
+      }
+      return `<div class="category-item-row">
+        <span class="category-item-bullet">・</span>
+        <span class="category-item-text">${escHtml(item)}</span>
       </div>`;
+    }).join('');
+
+    const addRowHtml = isEditMode
+      ? `<div class="add-item-row">
+          <input class="add-item-input" placeholder="項目を追加..." id="add-item-${ci}" />
+          <button class="add-item-btn" onclick="addItem(${ci})">追加</button>
+        </div>`
+      : '';
+
+    const catNameHtml = isEditMode
+      ? `<input class="category-name-input" value="${escAttr(cat)}" onchange="updateCatName(${ci}, this.value)" />`
+      : `<span class="category-name-static">${escHtml(cat)}</span>`;
+
+    const delCatHtml = isEditMode
+      ? `<button class="cat-del-btn" onclick="deleteCat(${ci})">×</button>`
+      : `<span class="category-count">${items.length}件</span>`;
+
+    return `<div class="category-block">
+      <div class="category-header">
+        <span class="category-arrow open" onclick="toggleCategory(this)">▶</span>
+        ${catNameHtml}
+        ${delCatHtml}
+      </div>
+      <div class="category-items">${itemsHtml}${addRowHtml}</div>
+    </div>`;
   }).join('');
+
+  const addCatHtml = isEditMode
+    ? `<div class="add-cat-row">
+        <input class="add-cat-input" placeholder="新しいカテゴリ名..." id="new-cat-input" />
+        <button class="add-cat-btn" onclick="addCategory()">追加</button>
+      </div>`
+    : '';
+
   wrap.innerHTML = `
     <div class="living-memo">
       <div class="living-memo-header">
         <span class="living-memo-title">まとめメモ</span>
         <span class="living-memo-updated">${updatedStr}</span>
+        <button class="edit-mode-btn ${isEditMode ? 'active' : ''}" onclick="toggleEditMode()">
+          ${isEditMode ? '完了' : '編集'}
+        </button>
       </div>
       ${blocks}
+      ${addCatHtml}
       <div class="edit-bar">
-        <span>最新の状態に自動整理されます</span>
+        <span>${isEditMode ? '編集モード — 変更は自動保存されます' : '最新の状態に自動整理されます'}</span>
         <button class="btn-sm danger" onclick="confirmClearAll()">全削除</button>
       </div>
     </div>`;
 }
 
-function toggleCategory(header) {
-  const arrow = header.querySelector('.category-arrow');
-  const items = header.nextElementSibling;
-  const isOpen = arrow.classList.contains('open');
-  arrow.classList.toggle('open', !isOpen);
-  items.style.display = isOpen ? 'none' : 'flex';
+// ============================================================
+//  Edit operations
+// ============================================================
+function toggleEditMode() {
+  isEditMode = !isEditMode;
+  renderLivingMemo();
+}
+
+function updateItem(ci, ii, val) {
+  const cat = Object.keys(livingMemo)[ci];
+  livingMemo[cat][ii] = val;
+  saveLivingMemo();
+}
+
+function deleteItem(ci, ii) {
+  const cat = Object.keys(livingMemo)[ci];
+  livingMemo[cat].splice(ii, 1);
+  if (livingMemo[cat].length === 0) delete livingMemo[cat];
+  saveLivingMemo();
+  renderLivingMemo();
+}
+
+function addItem(ci) {
+  const cat = Object.keys(livingMemo)[ci];
+  const input = document.getElementById(`add-item-${ci}`);
+  const val = input.value.trim();
+  if (!val) return;
+  livingMemo[cat].push(val);
+  saveLivingMemo();
+  renderLivingMemo();
+}
+
+function updateCatName(ci, newName) {
+  if (!newName.trim()) return;
+  const cats = Object.keys(livingMemo);
+  const oldName = cats[ci];
+  if (oldName === newName) return;
+  const newMemo = {};
+  cats.forEach((c, i) => { newMemo[i === ci ? newName : c] = livingMemo[c]; });
+  livingMemo = newMemo;
+  saveLivingMemo();
+}
+
+function deleteCat(ci) {
+  const cat = Object.keys(livingMemo)[ci];
+  if (!confirm(`「${cat}」カテゴリを削除しますか？`)) return;
+  delete livingMemo[cat];
+  saveLivingMemo();
+  renderLivingMemo();
+}
+
+function addCategory() {
+  const input = document.getElementById('new-cat-input');
+  const name = input.value.trim();
+  if (!name || livingMemo[name]) return;
+  livingMemo[name] = [];
+  saveLivingMemo();
+  renderLivingMemo();
+}
+
+function saveLivingMemo() {
+  lastUpdated = new Date().toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  localStorage.setItem('living_memo', JSON.stringify(livingMemo));
+  localStorage.setItem('living_memo_updated', lastUpdated);
+}
+
+function toggleCategory(arrow) {
+  arrow.classList.toggle('open');
+  const items = arrow.closest('.category-header').nextElementSibling;
+  items.style.display = arrow.classList.contains('open') ? 'flex' : 'none';
 }
 
 function confirmClearAll() {
@@ -467,19 +647,15 @@ function switchTab(tab) {
   document.getElementById('page-memos').classList.toggle('active', tab==='memos');
   if (tab === 'memos') renderLivingMemo();
 }
-function onServiceChange() {
-  document.getElementById('apiKeyInput').value = '';
-  document.getElementById('apiKeyInput').placeholder =
-    document.getElementById('aiService').value === 'openai' ? 'sk-... OpenAI APIキーを貼り付け' : 'sk-ant-... Claude APIキーを貼り付け';
-}
 function setStatus(type, msg) {
   document.getElementById('statusDot').className = 'status-dot' + (type ? ' '+type : '');
   document.getElementById('statusText').textContent = msg;
 }
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(str) { return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+// Init
+loadSavedKey();
 renderLivingMemo();
 </script>
 </body>
