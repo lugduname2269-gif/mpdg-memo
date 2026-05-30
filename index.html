@@ -274,7 +274,7 @@
   .edit-mode-btn {
     font-size: 10.5px; font-family: var(--mono); font-weight: 300; letter-spacing: 0.08em;
     background: none; border: 1px solid var(--text); border-radius: 20px;
-    color: var(--text-muted); padding: 2px 10px; cursor: pointer; transition: all 0.15s;
+    color: var(--text); padding: 2px 10px; cursor: pointer; transition: all 0.15s;
   }
   .edit-mode-btn.active { color: var(--text); }
   .edit-status {
@@ -344,7 +344,7 @@
   .empty-state {
     text-align: center; padding: 3rem 1rem;
     color: var(--text-dim); font-size: 11.5px; line-height: 2.2;
-    font-family: var(--gothic); font-weight: 400;
+    font-family: var(--mono); font-weight: 300; letter-spacing: 0.06em;
   }
 
   @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
@@ -410,7 +410,7 @@
           <div class="ai-setting-row">
             <label>Service</label>
             <select class="ai-select" id="aiService" onchange="onServiceChange()">
-              <option value="openai">OpenAI (ChatGPT)</option>
+              <option value="openai">ChatGPT (OpenAI)</option>
               <option value="claude" selected>Claude (Anthropic)</option>
             </select>
           </div>
@@ -437,14 +437,14 @@
   <!-- ========== メモタブ ========== -->
   <div class="page" id="page-memos">
     <div class="memo-page-inner">
-      <div id="livingMemoWrap"></div>
-      <div class="tab-inline centered" style="margin-top:auto;padding-top:1.5rem">
+      <div class="tab-inline centered" style="margin-top:0;margin-bottom:1rem">
         <div class="tab-inline-row">
           <button class="tab" onclick="switchTab('record')">録音</button>
           <span class="tab-sep">/</span>
           <button class="tab active" onclick="switchTab('memos')">メモ</button>
         </div>
       </div>
+      <div id="livingMemoWrap"></div>
     </div>
   </div>
 
@@ -494,7 +494,7 @@ function forgetKey() {
 function onServiceChange() {
   document.getElementById('apiKeyInput').placeholder =
     document.getElementById('aiService').value === 'openai'
-      ? 'sk-... OpenAI APIキーを貼り付け' : 'sk-ant-... Claude APIキーを貼り付け';
+      ? 'sk-... ChatGPT APIキーを貼り付け' : 'sk-ant-... Claude APIキーを貼り付け';
   loadSavedKey();
 }
 
